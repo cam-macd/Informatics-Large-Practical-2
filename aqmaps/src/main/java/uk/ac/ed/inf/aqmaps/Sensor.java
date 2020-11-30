@@ -45,13 +45,13 @@ public class Sensor {
 	
 	// Sets the position according to the sensor's what3words location
 	public void setPosition() {
-		String urlString = 
+		var urlString = 
 				"http://localhost:80/words/" + location.replaceAll("\\.","/") 
 				+ "/details.json";
 
-		String jsonDetailsString = DroneController.getResponseBody(urlString);
+		var jsonDetailsString = DroneController.getResponseBody(urlString);
 		
-		Details details = new Gson().fromJson(jsonDetailsString, Details.class);
+		var details = new Gson().fromJson(jsonDetailsString, Details.class);
 		
 		position = Point.fromLngLat(details.getLng(), details.getLat());
 	}

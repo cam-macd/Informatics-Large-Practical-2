@@ -74,7 +74,7 @@ public class Drone {
 	// requirements is an illegal argument.
 	public void move(Point newPosition) {
 		// magnitude is affected by floating point errors
-		double magnitude = PointUtils.findDistanceBetween(position,newPosition);
+		var magnitude = PointUtils.findDistanceBetween(position,newPosition);
 		// Due to floating point errors the magnitude cannot be compared 
 		// directly with 0.0003.
 		// This threshold gives less than a cm difference between magnitude and
@@ -85,11 +85,11 @@ public class Drone {
 		}
 		
 		// angle will also be affected by floating point errors
-		double angle = 
+		var angle = 
 				Math.toDegrees(PointUtils.angleBetweenPoints(position, 
 						newPosition));
-		int roundedAngle = (int) Math.round(angle);
-		int nearestTen = (int) (Math.round(angle/10) * 10);
+		var roundedAngle = (int) Math.round(angle);
+		var nearestTen = (int) (Math.round(angle/10) * 10);
 		if (nearestTen - angle > 0.0001 || roundedAngle % 10 != 0 || angle < 0 
 				|| angle > 350) {
 			throw new IllegalArgumentException("Angle must be a multiple of 10 "
