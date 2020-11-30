@@ -409,7 +409,7 @@ public class DroneController {
 					dc.greedyFlightPath(launchPoint);
 					
 					// Start of refactor testing
-
+					
 					String dayString = Integer.toString(k);
 					if (k < 10) {
 						dayString = "0" + dayString;
@@ -434,7 +434,7 @@ public class DroneController {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-
+					
 					// End of refactor Testing
 					
 					sum = sum + dc.getDrone().getMoveAllowance();
