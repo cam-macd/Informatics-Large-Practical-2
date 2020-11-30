@@ -99,8 +99,8 @@ public class Drone {
 		
 		if (moveAllowance <= 0) { 
 			throw new IllegalArgumentException("Drone cannot perform a move "
-					+ "unless it move allowance is greater than 0 whereas move "
-					+ "was called with moveAllowance = " + moveAllowance);
+					+ "unless it's move allowance is greater than 0 whereas"
+					+ "move was called with moveAllowance = " + moveAllowance);
 		}
 		
 		moveAllowance = moveAllowance - 1;
