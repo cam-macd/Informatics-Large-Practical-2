@@ -12,13 +12,14 @@ public class PointUtils {
 	// Returns a new Point given a starting point and angle assuming the 
 	// magnitude of the move is 0.0003 degrees.
 	// Takes an angle in degrees as the argument, with 0 representing a move
-	// east, 90 representing south, 180 representing west and 270 representing
-	// north.
+	// east, 90 representing north, 180 representing west and 270 representing
+	// south.
 	public static Point pointAfterMove(Point startPoint, int angle) {
-		double radiansAngle = Math.toRadians(angle);
+		var radiansAngle = Math.toRadians(angle);
 
-		double newLng = startPoint.longitude() + Math.cos(radiansAngle)*0.0003;
-		double newLat = startPoint.latitude() - Math.sin(radiansAngle)*0.0003;
+		// The following expressions are derived using basic trigonometry.
+		var newLng = startPoint.longitude() + Math.cos(radiansAngle)*0.0003;
+		var newLat = startPoint.latitude() + Math.sin(radiansAngle)*0.0003;
 		return Point.fromLngLat(newLng, newLat);
 	}
 	
@@ -42,13 +43,25 @@ public class PointUtils {
 		// eastPointOrigin is the point that the drone would end in if it moved 
 		// at an angle of 0 degrees with a magnitude of 0.0003 degrees starting 
 		// from the origin.
-		Point eastPointOrigin = Point.fromLngLat(0.0003, 0);
-		Point newPointOrigin = subtractPoints(newPoint,startPoint); // The new point relative to the origin
-		double dotProduct = 
+		var eastPointOrigin = Point.fromLngLat(0.0003, 0);
+		var newPointOrigin = subtractPoints(newPoint,startPoint); // The new point relative to the origin
+		var dotProduct = 
 				eastPointOrigin.longitude()*newPointOrigin.longitude() 
 				+ eastPointOrigin.latitude()*newPointOrigin.latitude();
-		return Math.acos(dotProduct/(pointMagnitude(eastPointOrigin)*pointMagnitude(newPointOrigin)));
+		
+		var angle = 
+				Math.acos(dotProduct/(pointMagnitude(eastPointOrigin)*
+						pointMagnitude(newPointOrigin)));
 		// The above expression is derived from the equation of the dot product.
+		// This will never give an angle above 180 degrees, so the code below
+		// compensates for this so that it follows the necessary angle
+		// conventions for the cardinal directions.
+		if (newPoint.latitude() < startPoint.latitude()) {
+			angle = (360*Math.PI)/180 - angle;
+		}
+		
+		return angle;
+		
 	}
 	
 }
