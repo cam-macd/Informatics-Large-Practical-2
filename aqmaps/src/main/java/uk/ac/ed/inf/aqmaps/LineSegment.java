@@ -50,46 +50,47 @@ public class LineSegment {
 	public Boolean intersectsWith(LineSegment otherLine) {
 		// First case: where both line segments are vertical
 		if (isVertical == true && otherLine.isVertical()) {
+			// The line segments are either parallel or are part of the same
+			// line, in which case they are either overlapping or not.
 			return this.doEndPointsOverlap(otherLine);
 		}
 		
 		// Second case: where this line segment is vertical and the other line
 		// segment is not.
 		else if (isVertical && !otherLine.isVertical()) {
+			// (thisX, yIntersectionPoint) is the point at which both line
+			// segments would intersect if they were considered as straight 
+			// lines.
 			var thisX = endPoint1.longitude();
-			// yIntersectionPoint is the y coordinate of the other line segment,
-			// considered as a line, at the x coordinate of this vertical line 
-			// segment.
 			var yIntersectionPoint = 
 					otherLine.getGradient() * thisX + otherLine.getYIntercept();
-			
 			if (this.isPointOnLineSegment(thisX, yIntersectionPoint) && 
 					otherLine.isPointOnLineSegment(thisX, yIntersectionPoint)){
 				// The intersection point lies within endpoints of both line
-				// segments so the lines intersect.
+				// segments so the line segments intersect.
 				return true; 
 			}
 			// The intersection point does not lie within endpoints of both line
-			// segments so the lines intersect.
+			// segments so the line segments do not intersect.
 			else return false; 
 		}
 		
 		// Third case: where this line segment is not vertical but the other 
 		// line segment is.
 		else if (!isVertical && otherLine.isVertical()) {
+			// (thisX, yIntersectionPoint) is the point at which both line
+			// segments would intersect if they were considered as straight 
+			// lines.
 			var otherX = otherLine.getEndPoint1().longitude();
-			// yIntersectionPoint is the y coordinate of this line segment,
-			// considered as a line, at the x coordinate of the other vertical 
-			// line segment.
 			var yIntersectionPoint = gradient * otherX + yIntercept;
 			if (this.isPointOnLineSegment(otherX, yIntersectionPoint) && 
 					otherLine.isPointOnLineSegment(otherX, yIntersectionPoint)){
 				return true;
 				// The intersection point lies within endpoints of both line
-				// segments so the lines intersect.
+				// segments so the line segments intersect.
 			}
 			// The intersection point does not lie within endpoints of both line
-			// segments so the lines intersect.
+			// segments so the line segments do not intersect.
 			else return false; 
 		}
 		
@@ -99,12 +100,12 @@ public class LineSegment {
 		// => m1x - m2x = c2 - c1 => (m1-m2)x = c2-c1 => x = (c2-c1)/(m1-m2)
 		else {
 			if (gradient == otherLine.getGradient()) {
-				// Both line segments are either parallel or part of the same
-				// line so they are either overlapping or not overlapping.
+				// The line segments are either parallel or are part of the same
+				// line, in which case they are either overlapping or not.
 				return this.doEndPointsOverlap(otherLine);
 			}
 			// Both line segments are not parallel so if we consider them
-			// both as full lines they will have a point of intersection
+			// both as straight lines they will have a point of intersection
 			// with xIntersectionPoint and yIntersectionPoint representing
 			// the coordinates of that intersection.
 			var xIntersectionPoint = (otherLine.getYIntercept()-yIntercept)
@@ -136,17 +137,20 @@ public class LineSegment {
 				return true;
 			}
 		}
-		else if ((lng <= endPoint1.longitude() && lng >= endPoint2.longitude()) 
-				|| 
-				(lng >= endPoint1.longitude() && lng<= endPoint2.longitude())) {
-			// The x coordinate of the point lies within the x range of the
-			// line segment
-			if ((lat <= endPoint1.latitude() && lat >= endPoint2.latitude()) ||
-			 (lat >= endPoint1.latitude() && lat <= endPoint2.latitude())){
-				// The y coordinate of the point lies within the y range of the
-				// line segment as well so the point is on the line segment.
-				return true;
-			}
+		else {
+			var point = Point.fromLngLat(lng,lat);
+			var distance1 = PointUtils.findDistanceBetween(point,endPoint1);
+			var distance2 = PointUtils.findDistanceBetween(point,endPoint2);
+				
+			var totalDistance = 
+						PointUtils.findDistanceBetween(endPoint1, endPoint2);
+				
+			// Due to the triangle inequality, if the point lies on the line
+			// segment then the sum of distance1 and distance2 should be equal
+			// to the total distance between the endpoints. The expression
+			// below takes into account floating point errors.
+			return (Math.abs((distance1 + distance2) - totalDistance) 
+					< 1*Math.pow(10,-14));
 		}
 		
 		return false;

@@ -77,9 +77,7 @@ public class Drone {
 		var magnitude = PointUtils.findDistanceBetween(position,newPosition);
 		// Due to floating point errors the magnitude cannot be compared 
 		// directly with 0.0003.
-		// This threshold gives less than a cm difference between magnitude and
-		// the expected magnitude of the move.
-		if (magnitude - 0.0003 > 0.000001) { 
+		if (Math.abs(magnitude - 0.0003) > 1*Math.pow(10,-14)) { 
 			throw new IllegalArgumentException("Magnitude of the move must be"
 					+ "0.0003 degrees, but was " + magnitude);
 		}
@@ -90,8 +88,8 @@ public class Drone {
 						newPosition));
 		var roundedAngle = (int) Math.round(angle);
 		var nearestTen = (int) (Math.round(angle/10) * 10);
-		if (nearestTen - angle > 0.0001 || roundedAngle % 10 != 0 || angle < 0 
-				|| angle > 350) {
+		if (Math.abs(nearestTen - angle) > 0.00001 || 
+				roundedAngle % 10 != 0 || angle < 0 || angle > 350) {
 			throw new IllegalArgumentException("Angle must be a multiple of 10 "
 					+ "between 0 and 350 (inclusive), but was " + angle + 
 					"(unrounded)" );
