@@ -17,7 +17,6 @@ import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.google.gson.Gson;
-import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 
 
@@ -40,19 +39,19 @@ public class DroneController {
 	public DroneController(LineString confinementArea, int year, int month, int
 			day, Drone drone) {
 		
-		String dayString = Integer.toString(day);
+		var dayString = Integer.toString(day);
 		if (day < 10) {
 			dayString = "0" + dayString;
 		}
 		this.day = dayString;
 		
-		String monthString = Integer.toString(month);
+		var monthString = Integer.toString(month);
 		if (month < 10) {
 			monthString = "0" + monthString;
 		}
 		this.month = monthString;
 		
-		String yearString = Integer.toString(year);
+		var yearString = Integer.toString(year);
 		this.year = yearString;
 		
 		flightPathString = "";
@@ -72,18 +71,20 @@ public class DroneController {
 		this.drone = drone;
 	}
 	
-	// Setter for sensorList
+	// setSensorList sets sensorList by reading the map for the given date
+	// from the web server.
 	private void setSensorList(String year, String month, String day) {
-		// Must format the appropriate date inputs in a way that allows access
-		// to the appropriate web server directory.
-		String urlString = 
+		var urlString = 
 				"http://localhost:80/maps/" + year + "/" + month + "/" + day 
 				+ "/air-quality-data.json";
 		
-		String jsonMapString = getResponseBody(urlString);
-		jsonMapString = jsonMapString.replaceAll("\"null\"", "\"NaN\""); // Surround with brackets incase a What3Words encoding can contain the word null
+		var jsonMapString = getResponseBody(urlString);
+		jsonMapString = jsonMapString.replaceAll("\"null\"", "\"NaN\"");
+		// Rather than just replacing all occurrences of null with NaN, we 
+		// replace all occurrences of "null" with "NaN", since the what3Words
+		// addresses might contain the word null.
 		
-		Type listType = new TypeToken<ArrayList<Sensor>>() {}.getType();
+		var listType = new TypeToken<ArrayList<Sensor>>() {}.getType();
 		sensorList = new Gson().fromJson(jsonMapString, listType);
 		
 		for (int i = 0; i < sensorList.size(); i++) {
@@ -93,17 +94,18 @@ public class DroneController {
 
 	}
 	
-	// Setter for noFlyZones, and initialises featureList to be equal to the
-	// Feature List containing all of the no-fly-zones
+	// setNoFlyZones accesses the web server to set the noFlyZones and 
+	// initialises featureList to be equal to the Feature List containing all 
+	// of the no-fly-zones.
 	private void setNoFlyZones() {
 		
-		String urlString = "http://localhost:80/buildings/no-fly-zones.geojson";
-		List<Feature> noFlyZoneFeatures = 
+		var urlString = "http://localhost:80/buildings/no-fly-zones.geojson";
+		var noFlyZoneFeatures = 
 				FeatureCollection.fromJson(getResponseBody(urlString)).
 				features();
 		
 		// Initialise featureList to contain the no fly zones and confinement
-		// area is added to this list in the constructor.
+		// area is added to this list later in the constructor.
 		featureList = noFlyZoneFeatures;
 		
 		for (int i = 0; i < noFlyZoneFeatures.size(); i++) {
@@ -111,7 +113,6 @@ public class DroneController {
 		}
 	}
 	
-	// Getter for drone
 	private Drone getDrone() {
 		return drone;
 	}
@@ -120,44 +121,53 @@ public class DroneController {
 		return noFlyLineSegments;
 	}
 	
+	// Sets noFlyLineSegments which is defined as the line segments which the
+	// drone should never cross, not to be mistaken with, purely, the line 
+	// segments defining the no-fly-zones these will also include the line 
+	// segments defining the confinement area.
 	private void setNoFlyLineSegments() {
-		// Adding the no-fly-zones to noFlyLineSegments
+		// Adding the line segments defining the no-fly-zones to 
+		// noFlyLineSegments
 		for (int i = 0; i < noFlyZones.size(); i++) {
-			// noFlyZonePoints is the list of points which make up the LineStrings
-			// which represent the edges of no-fly-zones. Must use get(0) because
-			// .coordinates() returns List<List<Point>> for a polygon.
-			List<Point> noFlyZonePoints = 
+			// noFlyZonePointList is the list of points which make up the 
+			// LineStrings which represent the edges of no-fly-zones. Must use 
+			// .get(0) because.coordinates() returns List<List<Point>> for a 
+			// polygon.
+			var noFlyZonePointList = 
 					noFlyZones.get(i).coordinates().get(0);
-			for (int j = 0; j < noFlyZonePoints.size() - 1; j++) {
-				Point point1 = 
-						Point.fromLngLat(noFlyZonePoints.get(j).longitude(), 
-								noFlyZonePoints.get(j).latitude());
-				Point point2 = 
-						Point.fromLngLat(noFlyZonePoints.get(j+1).longitude(), 
-								noFlyZonePoints.get(j+1).latitude());
-				LineSegment noFlyLineSegment = new LineSegment(point1, point2);
+			for (int j = 0; j < noFlyZonePointList.size() - 1; j++) {
+				var point1 = 
+						Point.fromLngLat(noFlyZonePointList.get(j).longitude(), 
+								noFlyZonePointList.get(j).latitude());
+				var point2 = 
+						Point.fromLngLat(noFlyZonePointList.get(j+1).longitude(), 
+								noFlyZonePointList.get(j+1).latitude());
+				var noFlyLineSegment = new LineSegment(point1, point2);
 				noFlyLineSegments.add(noFlyLineSegment);
 			}
 		}
 		
-		// Adding the confinement area to noFlyLineSegments
-		List<Point> confinementAreaPoints = confinementArea.coordinates();
-		for (int i = 0; i < confinementAreaPoints.size() - 1 ; i++) {
-			LineSegment noFlyLineSegment = 
-					new LineSegment(confinementAreaPoints.get(i), 
-							confinementAreaPoints.get(i+1));
+		// Adding the line segments defining the confinement area to 
+		// noFlyLineSegments
+		var confinementAreaPointList = confinementArea.coordinates();
+		for (int i = 0; i < confinementAreaPointList.size() - 1 ; i++) {
+			var noFlyLineSegment = 
+					new LineSegment(confinementAreaPointList.get(i), 
+							confinementAreaPointList.get(i+1));
 			noFlyLineSegments.add(noFlyLineSegment);
 		}
 	}
 
-	
+	// Writes the geojson readings file to contain the sensors with their
+	// updated reading and the features in featureList which should contain the
+	// path of the drone.
 	// Should be called with the fileName "readings-DD-MM-YYYY.geojson" for the
 	// appropriate date.
 	private void writeReadings(String fileName) {
 		for (int i = 0; i < sensorList.size(); i++) {
-			Sensor sensor = sensorList.get(i);
-			Point sensorPoint = sensorList.get(i).getPosition();
-			Feature sensorFeature = Feature.fromGeometry((Geometry)sensorPoint);
+			var sensor = sensorList.get(i);
+			var sensorPoint = sensorList.get(i).getPosition();
+			var sensorFeature = Feature.fromGeometry((Geometry)sensorPoint);
 			sensorFeature.addStringProperty("location", sensor.getLocation());
 			sensorFeature.addStringProperty("rgb-string", 
 					sensor.getRgbString());
@@ -168,7 +178,7 @@ public class DroneController {
 			featureList.add(sensorFeature);
 		}
         var featureCollection = FeatureCollection.fromFeatures(featureList);
-        String jsonString = featureCollection.toJson();
+        var jsonString = featureCollection.toJson();
 		try {
 			var file = new FileWriter(fileName);
 	        file.write(jsonString);
@@ -178,6 +188,7 @@ public class DroneController {
 		}
 	}
 	
+	// Writes the flightpath txt file to contain flightPathString.
 	// Should be called with the fileName "flightpath-DD-MM-YYYY.txt" for the
 	// appropriate date.
 	private void writeFlightPath(String fileName) {
@@ -189,34 +200,17 @@ public class DroneController {
 			e2.printStackTrace();
 		}
 	}
-	
-	// Used for testing while optimizing some code
-	public String getFlightPathString() {
-		return flightPathString;
-	}
-	
-	// Used for testing
- 	public void printSensors() {
-		System.out.println("Number of sensors in list: " + sensorList.size());
-		for (int i = 0; i < sensorList.size(); i++) {
-			Sensor sensor = sensorList.get(i);
-			System.out.println("What3Words Location: " + sensor.getLocation());
-			System.out.println("Battery: " + sensor.getBattery());
-			System.out.println("Reading: " + sensor.getReading());
-			System.out.println("Lng: " + sensor.getPosition().longitude() 
-					+ ", Lat: " + sensor.getPosition().latitude());
-		}
-	} 
+
 	
 	// Moves the drone and updates the flight path string of the drone.
 	// The Point, newPosition, must meet the requirements of drone's move 
- 	// function.
+ 	// function - this should be confirmed before it is passed to this function.
 	private void moveDrone(Point newPosition) {
 		// angle will be affected by floating point errors
-		double angle = Math.toDegrees(PointUtils.angleBetweenPoints(
+		var angle = Math.toDegrees(PointUtils.angleBetweenPoints(
 				drone.getPosition(), newPosition));
-		int roundedAngle = (int) Math.round(angle);
-		
+		var roundedAngle = (int) Math.round(angle);
+		// Update flightPathString
 		flightPathString = flightPathString + (151-drone.getMoveAllowance()) 
 				+ "," + drone.getPosition().longitude() + "," 
 				+ drone.getPosition().latitude() + "," + roundedAngle + "," 
@@ -226,20 +220,30 @@ public class DroneController {
 		drone.move(newPosition);
 	}
 	
-	// Used to read a sensor
+	// droneRead makes the drone read the sensor and updates the flight path
+	// string accordingly.
 	private void droneRead(Sensor sensor) {
 		flightPathString = flightPathString + sensor.getLocation() + "\n";
 		getDrone().readSensor(sensor);
 	}
 	
-	// Used when we cant/dont want to read a sensor
+	// droneDontRead is used when the the drone is unable to read a sensor
+	// or we dont want it to and updates the flight path string accordingly.
 	private void droneDontRead() {
 		flightPathString = flightPathString + "null\n";
 	}
 	
-
+	// Sends the drone to visit all of the sensors on the given day, choosing
+	// to travel from its startPosition to the sensor with the shortest
+	// straight line distance between the two points, then from that sensor
+	// to the next closest sensor according to the straight line distance and
+	// so on without explicitly visiting the same sensor twice until the drone
+	// has visited all the sensors. At this point the drone is sent to return
+	// to the startPosition. This takes into account the drone's move allowance
+	// and will not return to the start position if it runs out of moves before
+	// visiting all sensors.
 	public void greedyFlightPath(Point startPosition) {
-		Point currentPosition = startPosition;
+		var currentPosition = startPosition;
 		for (int i = 0; i < sensorList.size(); i++) {
 			if (drone.getMoveAllowance() <= 0) {
 				System.out.println("Flightpath runs out of moves on date "
@@ -248,11 +252,13 @@ public class DroneController {
 				break;
 			}
 			
-			double bestDistance = Double.POSITIVE_INFINITY;
-			Sensor closestSensor = sensorList.get(0);
+			// First we find the closest sensor according to the straight line
+			// distance from currentPosition to the sensor.
+			var bestDistance = Double.POSITIVE_INFINITY;
+			var closestSensor = sensorList.get(0);
 			for (int j = 0; j < sensorList.size(); j++) {
-				Sensor currentSensor = sensorList.get(j);
-				double currentSensorDistance = 
+				var currentSensor = sensorList.get(j);
+				var currentSensorDistance = 
 						PointUtils.findDistanceBetween(currentPosition, 
 								currentSensor.getPosition());
 				if (currentSensorDistance < bestDistance && 
@@ -261,8 +267,8 @@ public class DroneController {
 					closestSensor = currentSensor;
 				}
 			}
-			// The drone is sent to visit the closest sensor according to
-			// the straight line distance between its position and the sensor.
+			// The drone is sent to visit the closest sensor according to the
+			// straight line distance.
 			visitSensor(closestSensor);
 			
 			// The drone's current point is updated.
@@ -272,22 +278,23 @@ public class DroneController {
 		// Moving the drone back
 		returnDrone(startPosition);
 		
-		//System.out.println(drone.getMoveAllowance());
-		
-		String flightPathFile = "flightpath-" + day + "-" + month + "-" + year
+		// Write the flightpath txt file for the day.
+		var flightPathFile = "flightpath-" + day + "-" + month + "-" + year
 				+ ".txt";
 		writeFlightPath(flightPathFile);
 		
-		String readingsFile = "readings-" + day + "-" + month + "-" + year
+		// Write the geojson readings file for the day which contains the
+		// path of the drone and the updated sensor readings.
+		var readingsFile = "readings-" + day + "-" + month + "-" + year
 				+ ".geojson";
 		writeReadings(readingsFile);
 	}
 	
 	// Uses AStarUtils' aStar function to move the drone along the optimal
-	// path to a sensor
+	// path to a sensor and takes the sensor's readings.
 	private void visitSensor(Sensor sensor) {
-		Point currentPosition = drone.getPosition();
-		List<Point> moves = 
+		var currentPosition = drone.getPosition();
+		var moves = 
 				AStarUtils.aStar(currentPosition, sensor.getPosition(), 
 						getNoFlyLineSegments(), 0.0002);
 
@@ -313,8 +320,8 @@ public class DroneController {
 				droneDontRead(); // if the next move doesnt bring the drone in range of the target sensor, the drone will not read a sensor. 
 			}
 		}
-		LineString lines = LineString.fromLngLats(moves);
-		featureList.add(Feature.fromGeometry((Geometry)lines));
+		var moveLines = LineString.fromLngLats(moves);
+		featureList.add(Feature.fromGeometry((Geometry)moveLines));
 		// Need this if condition incase the drone runs out of moves before reaching the sensor.
 		if (PointUtils.findDistanceBetween(drone.getPosition(),
 				sensor.getPosition()) < 0.0002) {
@@ -326,10 +333,10 @@ public class DroneController {
 	// Returns the drone from its current position to the point from where it
 	// was launched, using AStarUtils' aStar function to find the path back
 	private void returnDrone(Point startPosition) {
-		Point currentPosition = drone.getPosition();
+		var currentPosition = drone.getPosition();
 
 		if (drone.getMoveAllowance() > 0) {
-			List<Point> returnMoves = 
+			var returnMoves = 
 					AStarUtils.aStar(currentPosition, startPosition, 
 							getNoFlyLineSegments(), 0.0003);
 			for (int i = 0; i < returnMoves.size() - 1; i++) {
@@ -349,14 +356,14 @@ public class DroneController {
 				moveDrone(returnMoves.get(i+1));
 				droneDontRead();// we have read all sensors at this point
 			}
-			LineString returnLines = LineString.fromLngLats(returnMoves);
-			featureList.add(Feature.fromGeometry((Geometry)returnLines));
+			var moveLines = LineString.fromLngLats(returnMoves);
+			featureList.add(Feature.fromGeometry((Geometry)moveLines));
 		}
 	}
 	
 	// Used to access the web server and return files as strings
 	public static String getResponseBody(String urlString) {
-		String responseString = "";
+		var responseString = "";
 		
 		var client = HttpClient.newHttpClient();
 		// HttpClient assumes that it is a GET request by default.
@@ -374,23 +381,27 @@ public class DroneController {
 		return responseString;
 	}
 
+	// Used for testing while optimizing some code
+	public String getFlightPathString() {
+		return flightPathString;
+	}
 	
 	public static void main(String[] args) {
 		// Setting up confinement area
-		Point point1 = Point.fromLngLat(-3.192473, 55.946233);
-		Point point2 = Point.fromLngLat(-3.184319,55.946233);
-		Point point3 = Point.fromLngLat(-3.184319, 55.942617);
-		Point point4 = Point.fromLngLat(-3.192473, 55.942617);
-		Point point5 = Point.fromLngLat(-3.192473, 55.946233);
-		List<Point> pointList = new ArrayList<>();
+		var point1 = Point.fromLngLat(-3.192473, 55.946233);
+		var point2 = Point.fromLngLat(-3.184319,55.946233);
+		var point3 = Point.fromLngLat(-3.184319, 55.942617);
+		var point4 = Point.fromLngLat(-3.192473, 55.942617);
+		var point5 = Point.fromLngLat(-3.192473, 55.946233);
+		var pointList = new ArrayList<Point>();
 		pointList.add(point1);
 		pointList.add(point2);
 		pointList.add(point3);
 		pointList.add(point4);
 		pointList.add(point5);
-		LineString confinementArea = LineString.fromLngLats(pointList);		
+		var confinementArea = LineString.fromLngLats(pointList);		
 		
-		Point launchPoint = Point.fromLngLat(-3.1878, 55.9444);
+		var launchPoint = Point.fromLngLat(-3.1878, 55.9444);
 		
 		int[] minDate = new int[3];
 		int minMoves = 100000;
