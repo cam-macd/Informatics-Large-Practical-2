@@ -25,6 +25,9 @@ public class DroneController {
 
 	private LineString confinementArea;
 	private List<Polygon> noFlyZones = new ArrayList<>();
+	// NoFlyLineSegments are the line segments which the drone must not
+	// intersect, not to be mistaken with the line segments representing the no
+	// fly zones.
 	private List<LineSegment> noFlyLineSegments = new ArrayList<>();
 	private List<Sensor> sensorList = new ArrayList<>();
 	private List<Feature> featureList = new ArrayList<>();
@@ -286,7 +289,7 @@ public class DroneController {
 		Point currentPosition = drone.getPosition();
 		List<Point> moves = 
 				AStarUtils.aStar(currentPosition, sensor.getPosition(), 
-						getNoFlyLineSegments());
+						getNoFlyLineSegments(), 0.0002);
 
 		for (int j = 0; j < moves.size() - 1; j++) {
 			// The drone should not perform any more moves if it has already
@@ -328,7 +331,7 @@ public class DroneController {
 		if (drone.getMoveAllowance() > 0) {
 			List<Point> returnMoves = 
 					AStarUtils.aStar(currentPosition, startPosition, 
-							getNoFlyLineSegments());
+							getNoFlyLineSegments(), 0.0003);
 			for (int i = 0; i < returnMoves.size() - 1; i++) {
 				// The drone should not perform any more moves if it has already
 				// reached its move limit.
