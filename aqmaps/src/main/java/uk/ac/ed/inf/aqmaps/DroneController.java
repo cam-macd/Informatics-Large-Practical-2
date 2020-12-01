@@ -396,7 +396,7 @@ public class DroneController {
 		int minMoves = 100000;
 		int[] maxDate = new int[3];
 		int maxMoves = 0;
-		int sum = 0;
+		double sum = 0;
 		int[] years = {2020,2021};
 		int[] months = {1,2,3,4,5,6,7,8,9,10,11,12};
 		int[] days = 
