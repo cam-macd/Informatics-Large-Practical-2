@@ -271,12 +271,14 @@ public class DroneController {
 			// straight line distance.
 			visitSensor(closestSensor);
 			
-			// The drone's current point is updated.
+			// The drone's current position is updated.
 			currentPosition = drone.getPosition();
 		}
 
-		// Moving the drone back
-		returnDrone(startPosition);
+		// Move the drone back to the start if it is not already close enough
+		if (PointUtils.findDistanceBetween(currentPosition, startPosition) >= 0.0003) {
+			returnDrone(startPosition);
+		}
 		
 		// Write the flightpath txt file for the day.
 		var flightPathFile = "flightpath-" + day + "-" + month + "-" + year
@@ -290,70 +292,75 @@ public class DroneController {
 		writeReadings(readingsFile);
 	}
 	
-	// Uses AStarUtils' aStar function to move the drone along the optimal
-	// path to a sensor and takes the sensor's readings.
+	// Uses AStarUtils' pathfinding function, findBestPath, to move the drone 
+	// along the optimal path to a sensor and takes the sensor's readings.
 	private void visitSensor(Sensor sensor) {
-		var currentPosition = drone.getPosition();
-		var moves = 
-				AStarUtils.aStar(currentPosition, sensor.getPosition(), 
-						getNoFlyLineSegments(), 0.0002);
-
-		for (int j = 0; j < moves.size() - 1; j++) {
-			// The drone should not perform any more moves if it has already
-			// reached its move limit.
-			if (drone.getMoveAllowance() <= 0) {
-				// Makes sure that the appropriate lines representing the 
-				// drone's moves are added to the featureList for the geojson 
-				// file later.
-				// Before this function is called, there should be an if
-				// statement making sure that moveAllowance is at least 1, so we 
-				// can be confident that the second argument of subList will be
-				// at least 1 and so moves will always represent at least one
-				// LineString on the geojson map.
-				moves = moves.subList(0,j);
-				break;
-			}
-			
-			moveDrone(moves.get(j+1)); // Since the first point in moves will be the drone's current position
-			if (PointUtils.findDistanceBetween(moves.get(j+1),
-					sensor.getPosition()) >= 0.0002) {
-				droneDontRead(); // if the next move doesnt bring the drone in range of the target sensor, the drone will not read a sensor. 
-			}
-		}
-		var moveLines = LineString.fromLngLats(moves);
-		featureList.add(Feature.fromGeometry((Geometry)moveLines));
-		// Need this if condition incase the drone runs out of moves before reaching the sensor.
-		if (PointUtils.findDistanceBetween(drone.getPosition(),
-				sensor.getPosition()) < 0.0002) {
-			droneRead(sensor);
-		}
 		
+		var currentPosition = drone.getPosition();
+		// First check that the drone is allowed to make moves.
+		if (drone.getMoveAllowance() > 0) {
+			List<Point> moves = 
+					AStarUtils.findBestPath(currentPosition, 
+							sensor.getPosition(), getNoFlyLineSegments(), 
+							0.0002);
+			for (int j = 0; j < moves.size() - 1; j++) {
+				// The drone should not perform any more moves if it has already
+				// reached its move limit.
+				if (drone.getMoveAllowance() <= 0) {
+					// Makes sure that the appropriate lines representing the 
+					// drone's moves are added to the featureList for the 
+					// geojson file later.
+					moves = moves.subList(0,j);
+					break;
+				}
+				
+				// Since the first point in moves will be the drone's current 
+				// position
+				moveDrone(moves.get(j+1)); 
+				
+				if (PointUtils.findDistanceBetween(moves.get(j+1),
+						sensor.getPosition()) >= 0.0002) {
+					// if the next move doesnt bring the drone in range of the 
+					// target sensor, the drone will not read a sensor. 
+					droneDontRead();
+				}
+				else {
+					droneRead(sensor); 
+					// otherwise the drone is in range of the sensor and can 
+					// take it's readings.
+				}
+			}
+			var moveLines = LineString.fromLngLats(moves);
+			featureList.add(Feature.fromGeometry((Geometry)moveLines));	
+		}
 	}
 	
 	// Returns the drone from its current position to the point from where it
-	// was launched, using AStarUtils' aStar function to find the path back
+	// was launched, using AStarUtils' pathfinding function, findBestPath, to 
+	// find the path back
 	private void returnDrone(Point startPosition) {
 		var currentPosition = drone.getPosition();
 
 		if (drone.getMoveAllowance() > 0) {
-			var returnMoves = 
-					AStarUtils.aStar(currentPosition, startPosition, 
+			List<Point> returnMoves = 
+					AStarUtils.findBestPath(currentPosition, startPosition, 
 							getNoFlyLineSegments(), 0.0003);
 			for (int i = 0; i < returnMoves.size() - 1; i++) {
 				// The drone should not perform any more moves if it has already
 				// reached its move limit.
 				if (drone.getMoveAllowance() <= 0) {
-					// Before going into this for loop, there is an if statement
-					// making sure that  moveAllowance is least 1, so we can be
-					// confident that the second argument of subList will be
-					// at least 1.
+					// Makes sure that the appropriate lines representing the 
+					// drone's moves are added to the featureList for the 
+					// geojson file later.
 					returnMoves = returnMoves.subList(0,i); 
 					System.out.println("Flightpath runs out of moves on date "
 							+ "DD/MM/YY: " + day + month + year + " - Cant "
 							+ "return to start point.");
 					break;
 				}
+				// Since the first point in returnMoves is the current position.
 				moveDrone(returnMoves.get(i+1));
+				
 				droneDontRead();// we have read all sensors at this point
 			}
 			var moveLines = LineString.fromLngLats(returnMoves);
@@ -366,15 +373,13 @@ public class DroneController {
 		var responseString = "";
 		
 		var client = HttpClient.newHttpClient();
-		// HttpClient assumes that it is a GET request by default.
 		var request = 
 				HttpRequest.newBuilder().uri(URI.create(urlString)).build();
-		// The response object is of class HttpResponse<String>
+
 		try {
 			var response = client.send(request, BodyHandlers.ofString());
 			responseString = response.body();
 		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -445,7 +450,6 @@ public class DroneController {
 							throw new IllegalStateException("flightpath-" + dayString + "-" + monthString + "-" + yearString + ".txt" + " has changed.");
 						}
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					

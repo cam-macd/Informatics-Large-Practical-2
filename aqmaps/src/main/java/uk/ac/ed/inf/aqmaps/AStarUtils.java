@@ -26,16 +26,17 @@ public class AStarUtils {
 		}
 		
 		return totalPath;
-	}	
+	}
 	
-	// Pseudocode cited in the report from Wikipedia was used in the coding
-	// and commenting of the aStar function. The aStar function takes a start
-	// Point and a target Point as well as noFlyLineSegments and returns a path
-	// from the start to the target which does not intersect with any of the 
-	// noFlyLineSegments. When the distance between a point and the target
-	// is less than the closeEnough value, this point is considered to be
-	// close enough to the target such that the point has reached the goal.
-	public static List<Point> aStar(Point start, Point target, 
+	// Pseudocode cited in the report, from Wikipedia, was used in the coding
+	// and commenting of this A* pathfinding function. This function takes a 
+	// start Point and a target Point as well as noFlyLineSegments and returns a 
+	// path, as a list of points, from the start to the target which does not 
+	// intersect with any of the noFlyLineSegments. When the distance between a 
+	// point and the target is less than the closeEnough value, this point is 
+	// considered to be close enough to the target such that the point is 
+	// considered the target.
+	public static List<Point> findBestPath(Point start, Point target, 
 			List<LineSegment> noFlyLineSegments, double closeEnough) {
 		var nodeComparator = new NodeComparator();
 		// openSet is the set of nodes to be expanded in the order set by the
