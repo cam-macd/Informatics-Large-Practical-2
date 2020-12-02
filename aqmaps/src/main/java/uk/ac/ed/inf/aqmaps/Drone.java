@@ -15,7 +15,7 @@ public class Drone {
 	// Symbol map for the different ranges of sensor readings
 	private Map<Integer, String> symbolMap = new HashMap<>();
 	
-	
+	// Drone should be instantiated with position as the launch point.
 	public Drone(Point position, int moveAllowance) {
 		this.position = position;
 		this.moveAllowance = moveAllowance;

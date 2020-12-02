@@ -230,8 +230,9 @@ public class DroneController {
 	// to the startPosition. This takes into account the drone's move allowance
 	// and will not return to the start position if it runs out of moves before
 	// visiting all sensors.
-	public void greedyFlightPath(Point startPosition) {
-		var currentPosition = startPosition;
+	public void greedyFlightPath() {
+		var startPosition = drone.getPosition();
+		var currentPosition = drone.getPosition();
 		for (int i = 0; i < sensorList.size(); i++) {
 			if (drone.getMoveAllowance() <= 0) {
 				System.out.println("Flightpath runs out of moves on date "
@@ -394,81 +395,25 @@ public class DroneController {
 		pointList.add(point5);
 		var confinementArea = LineString.fromLngLats(pointList);		
 		
-		var launchPoint = Point.fromLngLat(-3.1878, 55.9444);
+		var day = args[0];
+		var month = args[1];
+		var year = args[2];
 		
-		int[] minDate = new int[3];
-		int minMoves = 100000;
-		int[] maxDate = new int[3];
-		int maxMoves = 0;
-		double sum = 0;
-		int[] years = {2020,2021};
-		int[] months = {1,2,3,4,5,6,7,8,9,10,11,12};
-		int[] days = 
-			{31,29,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,
-					30,31}; // for month 1-12 between 2020 AND 2021
+		var launchPosition = 
+				Point.fromLngLat(Integer.parseInt(args[4]), 
+						Integer.parseInt(args[3]));
 		
-		for (int i = 0; i < years.length; i++) {
-			for (int j = 0; j < months.length; j++) {
-				for (int k = 1; k < days[j + i*12]+1; k++) {
-					
-					// Start of refactor testing
-					
-					String dayString = Integer.toString(k);
-					if (k < 10) {
-						dayString = "0" + dayString;
-					}
-					String monthString = Integer.toString(months[j]);
-					if (months[j] < 10) {
-						monthString = "0" + monthString;
-					}
-					String yearString = Integer.toString(years[i]);
-					
-					Drone drone = new Drone(launchPoint, 150);
-					DroneController dc = new DroneController(confinementArea, yearString, monthString, dayString, drone, 80);
-
-					dc.greedyFlightPath(launchPoint);
-					
-					var filePathCorrect = Path.of("Answers/flightpath-" + dayString + "-" + monthString + "-" + yearString + ".txt");
-
-					try {
-						String newFlightPathString = dc.getFlightPathString();
-						String correctFlightPathString = Files.readString(filePathCorrect);
-						if (correctFlightPathString.equals(newFlightPathString) == false) {
-							System.out.println(newFlightPathString.length());
-							System.out.println(correctFlightPathString.length());
-							throw new IllegalStateException("flightpath-" + dayString + "-" + monthString + "-" + yearString + ".txt" + " has changed.");
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					
-					// End of refactor Testing
-					
-					sum = sum + dc.getDrone().getMoveAllowance();
-					
-					if (dc.getDrone().getMoveAllowance() < minMoves) {
-						minMoves = dc.getDrone().getMoveAllowance();
-						minDate[0] = years[i];
-						minDate[1] = months[j];
-						minDate[2] = k;
-					}
-					else if (dc.getDrone().getMoveAllowance() > maxMoves) {
-						maxMoves = dc.getDrone().getMoveAllowance();
-						maxDate[0] = years[i];
-						maxDate[1] = months[j];
-						maxDate[2] = k;
-					}
-				}
-			}
-		}
+		var webServerPort = Integer.parseInt(args[5]);
 		
-		System.out.println("Average moves remaining per map: " + sum/(365+366));
-		System.out.println("Min moves remaining = " + minMoves + ", Date (DD-MM-YY) = " + minDate[2] +"-" +
-		minDate[1] + "-" + minDate[0]);
-		System.out.println("Max moves remaining = " + maxMoves + ", Date (DD-MM-YY) = " + maxDate[2] +"-" +
-		maxDate[1] + "-" + maxDate[0]);
+		var drone = new Drone(launchPosition, 150);
 		
-
+		var droneController = 
+				new DroneController(confinementArea, day, month, year, drone, 
+						webServerPort);
+		
+		droneController.greedyFlightPath();
+		
+		
 	
 	}
 }
