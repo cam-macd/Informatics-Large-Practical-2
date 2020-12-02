@@ -411,6 +411,9 @@ public class DroneController {
 		
 		droneController.greedyFlightPath();
 		
+		System.out.println(
+				"Drone moves remaining: " + drone.getMoveAllowance());
+		
 		
 	
 	}
