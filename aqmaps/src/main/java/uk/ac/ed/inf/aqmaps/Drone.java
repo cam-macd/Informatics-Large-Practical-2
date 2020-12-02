@@ -1,5 +1,8 @@
 package uk.ac.ed.inf.aqmaps;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.mapbox.geojson.Point;
 
 
@@ -7,10 +10,17 @@ public class Drone {
 
 	private Point position;
 	private int moveAllowance; // number of moves the drone is allowed to make
+	// Colour map for the different ranges of sensor readings
+	private Map<Integer, String> colourMap = new HashMap<>();
+	// Symbol map for the different ranges of sensor readings
+	private Map<Integer, String> symbolMap = new HashMap<>();
+	
 	
 	public Drone(Point position, int moveAllowance) {
 		this.position = position;
 		this.moveAllowance = moveAllowance;
+		setColours();
+		setSymbols();
 	}
 	
 	// If no move allowance is passed to the constructor, then moveAllowance 
@@ -26,6 +36,30 @@ public class Drone {
 	
 	public Point getPosition() {
 		return position;
+	}
+	
+	// Sets the colour map
+	private void setColours() {
+		colourMap.put(0, "#00ff00");
+		colourMap.put(1, "#40ff00");
+		colourMap.put(2, "#80ff00");
+		colourMap.put(3, "#c0ff00");
+		colourMap.put(4, "#ffc000");
+		colourMap.put(5, "#ff8000");
+		colourMap.put(6, "#ff4000");
+		colourMap.put(7, "#ff0000");
+	}
+	
+	// Sets the symbol map
+	private void setSymbols() {
+		colourMap.put(0, "lighthouse");
+		colourMap.put(1, "lighthouse");
+		colourMap.put(2, "lighthouse");
+		colourMap.put(3, "lighthouse");
+		colourMap.put(4, "danger");
+		colourMap.put(5, "danger");
+		colourMap.put(6, "danger");
+		colourMap.put(7, "danger");
 	}
 	
 	// Reads the sensor and sets it's marker properties.
@@ -44,22 +78,9 @@ public class Drone {
 		
 		if (sensor.getBattery() >= 10) {
 			double reading = sensor.getReading();
-			if (reading >= 0 && reading < 32) 
-				sensor.setMarkerProperties("#00ff00", "lighthouse");
-			else if (reading >= 32 && reading < 64)
-				sensor.setMarkerProperties("#40ff00", "lighthouse");
-			else if (reading >= 64 && reading < 96)
-				sensor.setMarkerProperties("#80ff00", "lighthouse");
-			else if (reading >= 96 && reading < 128)
-				sensor.setMarkerProperties("#c0ff00", "lighthouse");
-			else if (reading >= 128 && reading < 160)
-				sensor.setMarkerProperties("#ffc000", "danger");
-			else if (reading >= 160 && reading < 192)
-				sensor.setMarkerProperties("#ff8000", "danger");
-			else if (reading >= 192 && reading < 224)
-				sensor.setMarkerProperties("#ff4000", "danger");
-			else if (reading >= 224 && reading < 256)
-				sensor.setMarkerProperties("#ff0000", "danger");
+			var readingKey = (int) Math.floor(reading/32.0);
+			sensor.setMarkerProperties(
+					colourMap.get(readingKey), symbolMap.get(readingKey));
 		}
 		
 		else sensor.setMarkerProperties("000000", "cross");
