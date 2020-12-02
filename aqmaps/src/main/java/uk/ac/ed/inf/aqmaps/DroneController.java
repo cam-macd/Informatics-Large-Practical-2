@@ -398,8 +398,8 @@ public class DroneController {
 		var year = args[2];
 		
 		var launchPosition = 
-				Point.fromLngLat(Integer.parseInt(args[4]), 
-						Integer.parseInt(args[3]));
+				Point.fromLngLat(Double.parseDouble(args[4]), 
+						Double.parseDouble(args[3]));
 		
 		var webServerPort = Integer.parseInt(args[5]);
 		
