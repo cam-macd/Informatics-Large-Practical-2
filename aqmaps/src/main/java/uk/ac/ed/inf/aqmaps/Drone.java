@@ -52,14 +52,14 @@ public class Drone {
 	
 	// Sets the symbol map
 	private void setSymbols() {
-		colourMap.put(0, "lighthouse");
-		colourMap.put(1, "lighthouse");
-		colourMap.put(2, "lighthouse");
-		colourMap.put(3, "lighthouse");
-		colourMap.put(4, "danger");
-		colourMap.put(5, "danger");
-		colourMap.put(6, "danger");
-		colourMap.put(7, "danger");
+		symbolMap.put(0, "lighthouse");
+		symbolMap.put(1, "lighthouse");
+		symbolMap.put(2, "lighthouse");
+		symbolMap.put(3, "lighthouse");
+		symbolMap.put(4, "danger");
+		symbolMap.put(5, "danger");
+		symbolMap.put(6, "danger");
+		symbolMap.put(7, "danger");
 	}
 	
 	// Reads the sensor and sets it's marker properties.
