@@ -36,32 +36,22 @@ public class DroneController {
 	private String month;
 	private String day;
 	
-	public DroneController(LineString confinementArea, int year, int month, int
-			day, Drone drone) {
+	public DroneController(LineString confinementArea, String year, 
+			String month, String day, Drone drone, int webServerPort) {
 		
-		var dayString = Integer.toString(day);
-		if (day < 10) {
-			dayString = "0" + dayString;
-		}
-		this.day = dayString;
+		this.day = day;
 		
-		var monthString = Integer.toString(month);
-		if (month < 10) {
-			monthString = "0" + monthString;
-		}
-		this.month = monthString;
+		this.month = month;
 		
-		var yearString = Integer.toString(year);
-		this.year = yearString;
+		this.year = year;
 		
 		flightPathString = "";
 		
-		setSensorList(this.year, this.month, this.day);
+		setSensorList(this.year, this.month, this.day, webServerPort);
 		
-		setNoFlyZones();
+		setNoFlyZones(webServerPort);
 		
 		this.confinementArea = confinementArea;
-		featureList.add(Feature.fromGeometry((Geometry)confinementArea));
 		
 		// Note that the confinement area is also added to the noFlyLineSegments
 		// since the drone path should not intersect the lines defining the 
@@ -69,14 +59,16 @@ public class DroneController {
 		setNoFlyLineSegments(); 
 		
 		this.drone = drone;
+		
 	}
 	
 	// setSensorList sets sensorList by reading the map for the given date
-	// from the web server.
-	private void setSensorList(String year, String month, String day) {
+	// from the web server at the given port.
+	private void setSensorList(String year, String month, String day, 
+			int webServerPort) {
 		var urlString = 
-				"http://localhost:80/maps/" + year + "/" + month + "/" + day 
-				+ "/air-quality-data.json";
+				"http://localhost:" + webServerPort + "/maps/" + year + "/" 
+						+ month + "/" + day + "/air-quality-data.json";
 		
 		var jsonMapString = getResponseBody(urlString);
 		jsonMapString = jsonMapString.replaceAll("\"null\"", "\"NaN\"");
@@ -94,19 +86,15 @@ public class DroneController {
 
 	}
 	
-	// setNoFlyZones accesses the web server to set the noFlyZones and 
-	// initialises featureList to be equal to the Feature List containing all 
-	// of the no-fly-zones.
-	private void setNoFlyZones() {
+	// setNoFlyZones accesses the web server at the given port to set the 
+	// noFlyZones
+	private void setNoFlyZones(int webServerPort) {
 		
-		var urlString = "http://localhost:80/buildings/no-fly-zones.geojson";
+		var urlString = "http://localhost:" + webServerPort 
+				+ "/buildings/no-fly-zones.geojson";
 		var noFlyZoneFeatures = 
 				FeatureCollection.fromJson(getResponseBody(urlString)).
 				features();
-		
-		// Initialise featureList to contain the no fly zones and confinement
-		// area is added to this list later in the constructor.
-		featureList = noFlyZoneFeatures;
 		
 		for (int i = 0; i < noFlyZoneFeatures.size(); i++) {
 			noFlyZones.add((Polygon)noFlyZoneFeatures.get(i).geometry());
@@ -422,10 +410,6 @@ public class DroneController {
 		for (int i = 0; i < years.length; i++) {
 			for (int j = 0; j < months.length; j++) {
 				for (int k = 1; k < days[j + i*12]+1; k++) {
-					Drone drone = new Drone(launchPoint, 150);
-					DroneController dc = new DroneController(confinementArea, years[i], months[j], k, drone);
-
-					dc.greedyFlightPath(launchPoint);
 					
 					// Start of refactor testing
 					
@@ -438,6 +422,11 @@ public class DroneController {
 						monthString = "0" + monthString;
 					}
 					String yearString = Integer.toString(years[i]);
+					
+					Drone drone = new Drone(launchPoint, 150);
+					DroneController dc = new DroneController(confinementArea, yearString, monthString, dayString, drone, 80);
+
+					dc.greedyFlightPath(launchPoint);
 					
 					var filePathCorrect = Path.of("Answers/flightpath-" + dayString + "-" + monthString + "-" + yearString + ".txt");
 
