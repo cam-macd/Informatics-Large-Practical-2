@@ -406,7 +406,7 @@ public class DroneController {
 		var drone = new Drone(launchPosition, 150);
 		
 		var droneController = 
-				new DroneController(confinementArea, day, month, year, drone, 
+				new DroneController(confinementArea, year, month, day, drone, 
 						webServerPort);
 		
 		droneController.greedyFlightPath();
