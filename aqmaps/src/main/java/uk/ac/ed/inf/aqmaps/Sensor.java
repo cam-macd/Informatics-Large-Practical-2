@@ -11,13 +11,6 @@ public class Sensor {
 	private Point position;
 	private String rgbString;
 	private String markerSymbol;
-
-	public Sensor (String location, double battery, double reading) {
-		this.location = location;
-		this.battery = battery; 
-		this.reading = reading;
-		
-	}
 	
 	public double getReading() {
 		return reading;
