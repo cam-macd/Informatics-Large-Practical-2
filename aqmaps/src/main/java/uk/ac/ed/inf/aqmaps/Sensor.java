@@ -44,10 +44,10 @@ public class Sensor {
 	}
 	
 	// Sets the position according to the sensor's what3words location
-	public void setPosition() {
+	public void setPosition(int webServerPort) {
 		var urlString = 
-				"http://localhost:80/words/" + location.replaceAll("\\.","/") 
-				+ "/details.json";
+				"http://localhost:" + webServerPort + "/words/" 
+						+ location.replaceAll("\\.","/") + "/details.json";
 
 		var jsonDetailsString = DroneController.getResponseBody(urlString);
 		

@@ -78,7 +78,7 @@ public class DroneController {
 		sensorList = new Gson().fromJson(jsonMapString, listType);
 		
 		for (int i = 0; i < sensorList.size(); i++) {
-			sensorList.get(i).setPosition();
+			sensorList.get(i).setPosition(webServerPort);
 			sensorList.get(i).setMarkerProperties("#aaaaaa", ""); // All markers start as unvisited.
 		}
 
@@ -357,6 +357,7 @@ public class DroneController {
 	
 	// Used to access the web server and return files as strings
 	public static String getResponseBody(String urlString) {
+		
 		var responseString = "";
 		
 		var client = HttpClient.newHttpClient();
