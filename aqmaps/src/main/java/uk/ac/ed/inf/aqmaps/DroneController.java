@@ -373,10 +373,6 @@ public class DroneController {
 		return responseString;
 	}
 
-	// Used for testing while optimizing some code
-	public String getFlightPathString() {
-		return flightPathString;
-	}
 	
 	public static void main(String[] args) {
 		// Setting up confinement area
@@ -401,7 +397,7 @@ public class DroneController {
 				Point.fromLngLat(Double.parseDouble(args[4]), 
 						Double.parseDouble(args[3]));
 		
-		var webServerPort = Integer.parseInt(args[5]);
+		var webServerPort = Integer.parseInt(args[6]);
 		
 		var drone = new Drone(launchPosition, 150);
 		
