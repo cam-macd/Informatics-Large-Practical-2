@@ -98,7 +98,7 @@ public class AStarUtils {
 						gScore.put(currentNeighbour, tentative_gScore);
 						fScore.put(currentNeighbour, tentative_gScore + 
 								PointUtils.findDistanceBetween(
-										currentNeighbour,target));
+										currentNeighbour,target) - closeEnough);
 						var currentNeighbourNode = 
 								new Node(currentNeighbour,fScore.get(
 										currentNeighbour));
@@ -115,7 +115,7 @@ public class AStarUtils {
 					gScore.put(currentNeighbour, tentative_gScore);
 					fScore.put(currentNeighbour, tentative_gScore + 
 							PointUtils.findDistanceBetween(
-									currentNeighbour, target));
+									currentNeighbour, target) - closeEnough);
 					var currentNeighbourNode = 
 							new Node(currentNeighbour,fScore.get(
 									currentNeighbour));
