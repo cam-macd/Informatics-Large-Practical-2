@@ -7,4 +7,4 @@ In this repository, code is provided to control an autonomous drone which collec
 
 See ilp-report for information of software architecture, class documentation, and the drone control algorithm.
 
-See ilp-results for a large amount of sample flight paths. Geojson data can be read on geojson.io(geojson.io).
+See ilp-results for a large amount of sample flight paths. Geojson data can be read on geojson.io([geojson.io](https://geojson.io/)).
