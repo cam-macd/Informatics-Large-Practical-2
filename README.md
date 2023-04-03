@@ -6,6 +6,8 @@ In this repository, code is provided to control an autonomous drone which collec
 
 (Map pins = Air Quality Sensors, Red Regions = Building to Avoid, Grey line = Drone Flight Path)
 
-See ilp-report for information of software architecture, class documentation, and the drone control algorithm.
+See the [**aqmaps**](https://github.com/cm8819991197253/Informatics-Large-Practical-2/tree/master/aqmaps) folder for drone control software
 
-See ilp-results for a large amount of sample flight paths. Geojson data can be read on [geojson.io](https://geojson.io/).
+See [**ilp-report**](https://github.com/cm8819991197253/Informatics-Large-Practical-2/blob/master/ilp-report.pdf) for information of software architecture, class documentation, and the drone control algorithm.
+
+See **ilp-results** for a large amount of sample flight paths. Geojson data can be read on [geojson.io](https://geojson.io/).
