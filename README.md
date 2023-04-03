@@ -6,7 +6,7 @@ In this repository, code is provided to control an autonomous drone which collec
 
 (Map pins = Air Quality Sensors, Red Regions = Building to Avoid, Grey line = Drone Flight Path)
 
-See the [**aqmaps**](https://github.com/cm8819991197253/Informatics-Large-Practical-2/tree/master/aqmaps) directory for drone control software
+See the [**aqmaps**](https://github.com/cm8819991197253/Informatics-Large-Practical-2/tree/master/aqmaps) directory for the drone control software
 
 See [**ilp-report**](https://github.com/cm8819991197253/Informatics-Large-Practical-2/blob/master/ilp-report.pdf) for information of software architecture, class documentation, and the drone control algorithm.
 
